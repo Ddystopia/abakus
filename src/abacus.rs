@@ -37,7 +37,7 @@ impl<Cdr> Dec for (Cons<Z, Cdr>, Z)
 where
     Cdr: List,
 {
-    type Output = Cons<S<Z>, Cdr>;
+    type Output = Cons<Z, Cdr>;
 }
 
 impl<N, Cdr> Dec for (Cons<S<N>, Cdr>, Z)
