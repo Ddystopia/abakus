@@ -1,15 +1,12 @@
 #![recursion_limit = "1024"]
 
-mod peano;
-mod list;
 mod abacus;
+mod list;
+mod peano;
 
-use abacus::{AbInc, Func, AbDec, AbCycle};
-
-use crate::{
-    list::{Cons, List, Nil},
-    peano::{S, Z},
-};
+use abacus::{Cycle, Dec, Func, Inc};
+use crate::list::{Cons, List, Nil};
+use crate::peano::{S, Z};
 
 // ======================= Program ===========================
 
@@ -25,35 +22,29 @@ use crate::{
 
 type Registers = Cons<Z, Cons<Z, Cons<Z, Nil>>>;
 
-type M1 = <(Registers, S<Z>) as AbInc>::Output;
-type M2 = <(M1, S<Z>) as AbInc>::Output;
+type M1 = <(Registers, S<Z>) as Inc>::Output;
+type M2 = <(M1, S<Z>) as Inc>::Output;
 
 struct M3Body;
 
 impl<R> Func for (M3Body, R)
 where
     R: List,
-    (R, Z): AbInc,
-    (<(R, Z) as AbInc>::Output, S<S<Z>>): AbInc,
-    (
-        <(<(R, Z) as AbInc>::Output, S<S<Z>>) as AbInc>::Output,
-        S<Z>,
-    ): AbDec
+    (R, Z): Inc,
+    (<(R, Z) as Inc>::Output, S<S<Z>>): Inc,
+    (<(<(R, Z) as Inc>::Output, S<S<Z>>) as Inc>::Output, S<Z>): Dec,
 {
-    type Output = <(
-        <(<(R, Z) as AbInc>::Output, S<S<Z>>) as AbInc>::Output,
-        S<Z>,
-    ) as AbDec>::Output;
+    type Output = <(<(<(R, Z) as Inc>::Output, S<S<Z>>) as Inc>::Output, S<Z>) as Dec>::Output;
 }
 
-type M3 = <(M2, S<Z>, M3Body) as AbCycle>::Output;
+type M3 = <(M2, S<Z>, M3Body) as Cycle>::Output;
 
 type Computation = M3;
 
 #[cfg(feature = "pretty-print")]
 mod pretty_print {
-    use crate::peano::{Nat, S, Z};
     use crate::list::{Cons, Nil};
+    use crate::peano::{Nat, S, Z};
 
     pub trait ToString {
         fn to_string() -> String;
@@ -92,10 +83,13 @@ mod pretty_print {
 }
 
 fn main() {
-    #[cfg(feature = "pretty-print")] {
+    #[cfg(feature = "pretty-print")]
+    {
         use pretty_print::ToString;
         println!("{}", <Computation as ToString>::to_string());
-    } #[cfg(not(feature = "pretty-print"))] {
+    }
+    #[cfg(not(feature = "pretty-print"))]
+    {
         println!(
             "{}",
             std::any::type_name::<Computation>()
