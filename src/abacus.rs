@@ -1,6 +1,6 @@
 use crate::{
     list::{Cons, List},
-    peano::{Add, Nat, Sub, S, Z},
+    peano::{Nat, S, Z},
 };
 
 // ======================= Abacus ========================
@@ -15,9 +15,8 @@ impl<Car, Cdr> AbInc for (Cons<Car, Cdr>, Z)
 where
     Car: Nat,
     Cdr: List,
-    (Car, S<Z>): Add,
 {
-    type Output = Cons<<(Car, S<Z>) as Add>::Output, Cdr>;
+    type Output = Cons<S<Car>, Cdr>;
 }
 
 impl<Car, Cdr, N: Nat> AbInc for (Cons<Car, Cdr>, S<N>)
@@ -34,13 +33,19 @@ pub trait AbDec {
     type Output: List;
 }
 
-impl<Car, Cdr> AbDec for (Cons<Car, Cdr>, Z)
+impl<Cdr> AbDec for (Cons<Z, Cdr>, Z)
 where
-    Car: Nat,
     Cdr: List,
-    (Car, S<Z>): Sub,
 {
-    type Output = Cons<<(Car, S<Z>) as Sub>::Output, Cdr>;
+    type Output = Cons<S<Z>, Cdr>;
+}
+
+impl<N, Cdr> AbDec for (Cons<S<N>, Cdr>, Z)
+where
+    N: Nat,
+    Cdr: List,
+{
+    type Output = Cons<N, Cdr>;
 }
 
 impl<Car, Cdr, N: Nat> AbDec for (Cons<Car, Cdr>, S<N>)
